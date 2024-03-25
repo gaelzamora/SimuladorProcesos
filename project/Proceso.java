@@ -1,11 +1,12 @@
 package project;
 
 class Proceso {
-    private int idProceso;
-    private String nombreProceso;
-    private int tamanioProceso;
-    private int tiempoEjecucion;
-    private int tiempoLlegada;
+    public int idProceso;
+    public String nombreProceso;
+    public int tamanioProceso;
+    public int tiempoEjecucion;
+    public int tiempoLlegada;
+    public float execute;
 
     public Proceso(int idProceso, String nombreProceso, int tamanioProceso, int tiempoEjecucion, int tiempoLlegada) {
         this.idProceso = idProceso;
@@ -13,6 +14,19 @@ class Proceso {
         this.tamanioProceso = tamanioProceso;
         this.tiempoEjecucion = tiempoEjecucion;
         this.tiempoLlegada = tiempoLlegada;
+        this.execute = 0;
+    }
+
+    public float getExecute(float quantum) {
+        this.execute = quantum;
+        if(this.execute != (int) this.execute) {
+            this.execute = (int) this.execute;
+        }
+        else {
+            this.execute--;     
+        }
+
+        return this.execute;
     }
 
     public int getIdProceso() {

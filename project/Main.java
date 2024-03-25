@@ -4,14 +4,20 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        int t_max = 0;
+        float ejecuto = 0;
+        float esp_max = 0;
         
-        System.out.print("Ingrese el tiempo de quanum: ");
+        System.out.print("Ingrese el tiempo de quantum: ");
         int q = scanner.nextInt();
-
+        
         System.out.print("Ingrese la cantidad de procesos a crear: ");
         int n = scanner.nextInt();
-        
 
+        Value t_ejecuto = new Value(n);
+        Value t_espera_max = new Value(n);
+        Value t_llegada = new Value(n);
+        Formula formula = new Formula(n);
         Proceso[] procesos = new Proceso[n];
 
         for (int i = 0; i < n; i++) {
@@ -26,11 +32,18 @@ public class Main {
             System.out.print("Tiempo de llegada: ");
             int tiempoLlegada = scanner.nextInt();
 
-            procesos[i] = new Proceso(i + 1, nombreProceso, tamanioProceso, tiempoEjecucion, tiempoLlegada);
+            procesos[i] = new Proceso(i + 1, nombreProceso, tamanioProceso, tiempoEjecucion-1, tiempoLlegada);
+            t_max += procesos[i].getTiempoEjecucion();
+            
+            // 12 / 4 = 3
+            float q_proceso = procesos[i].getTiempoEjecucion() / q;
+            // 2 * 4
+            ejecuto = procesos[i].getExecute(q_proceso) * q;
+            t_ejecuto.addValue(ejecuto);
+            t_llegada.addValue(procesos[i].getTiempoLlegada());
         }
 
         scanner.close();
-
 
         ColaProcesos colaProcesos = new ColaProcesos(n);
         ColaProcesos ram = new ColaProcesos(n); // Nueva cola ram
@@ -39,39 +52,31 @@ public class Main {
         int qt=0;
         int tiempoActual = 0;
 
-        while (tiempoActual<100) {
+        while (tiempoActual<t_max+1) {
             System.out.println("Tiempo actual: " + tiempoActual);
             boolean is_time = false;
             boolean flag2 = false;
-            // n = 3
+
             //Poblar la cola de procesos en funcion del tiempo de llegada
             for(int i = 0; i<n; i++){
-                // nombre: hola, tamaño: 4, tiempo de servicio: 2, tiempo de llegada: 1
-                // nombre: o, tamaño: 4, tiempo de servicio: 5, tiempo de llegada: 1
-                // nombre: r, tamaño: 6, tiempo de servicio: 5, tiempo de llegada: 8
 
-                //0 == 0
-                // true
                 if (procesos[i].getTiempoLlegada()==tiempoActual){
                     
                     colaProcesos.enqueue(procesos[i]);
                     is_time = true;
+                    procesos[i].setTiempoEjecucion(procesos[i].getTiempoEjecucion()-1);
                 }
             }
             // Imprimir cola de procesos solo si se inserta un nuevo proceso
             
-            // true
             if (is_time) {
                 System.out.println("    Cola de procesos:");
                 colaProcesos.printQueue();
             }
            
            // Procesamiento de la cola RAM (Ccolocar elementos de cola procesos a ram solo si existe la capacidad)
-           // 0 < 0
             for(int i = 0; i<colaProcesos.size();i++){
-                // proceso = p1
                 Proceso proceso = colaProcesos.peek();
-                // 3 <= 5
                 if (proceso.getTamanioProceso() <= capacidad) {
                     System.out.println("    Hay espacio para el proceso:");
                     // 2
@@ -85,6 +90,7 @@ public class Main {
                     break;
                 }
             }
+            
             if (flag2) {
                 System.out.println("    Cola de procesos en RAM:");
                 ram.printQueue();
@@ -109,12 +115,14 @@ public class Main {
                 }
             }
             //Finaliza la ejecucion.   
-            // true 
             if(ejecucion_flag==1){
-                // p1
                 Proceso proceso = ram.peek();
-                // 0 == 0
-                if (proceso.getTiempoEjecucion()==0){
+                esp_max = 0;
+                if (proceso.getTiempoEjecucion()<=0){
+                    esp_max = tiempoActual;
+                    
+                    t_espera_max.addValue(esp_max);
+                    t_espera_max.printValues();
                     System.out.println("// -----    Termina la ejecucion de: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
                     ram.dequeue();
                     //regresar el espacio del proceso terminado.
@@ -123,9 +131,7 @@ public class Main {
                 }
             }
             //Nuevo proceso a ejecutarse.
-            // true * true = true
             if (!ram.isEmpty() && ejecucion_flag == 0){
-                // p1
                 Proceso proceso = ram.peek();
 
                 ejecucion_flag = 1;
@@ -134,12 +140,19 @@ public class Main {
                 qt=0;
             }
             tiempoActual++;
+            
+            
         }
-
+        float tiempo_esp = 0;
+        
+        if(n>=0) {
+            for(int i = 0; i < n; i++) {
+                System.out.println("t_espera_max es: "+t_espera_max.getValue(i)+" Tiempo de llegada: "+t_llegada.getValue(i)+" Tiempo que se ejecuto: "+t_ejecuto.getValue(i));
+                tiempo_esp = (t_espera_max.getValue(i)) - (t_llegada.getValue(i)) - (t_ejecuto.getValue(i));
+                formula.addValue((int) tiempo_esp);
+                tiempo_esp = 0;
+            }
+            System.out.println("El promedio de espera es: "+formula.totalFormula());
+        }
     }
-
 }
-
-
-
-
