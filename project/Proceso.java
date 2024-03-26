@@ -6,27 +6,26 @@ class Proceso {
     public int tamanioProceso;
     public int tiempoEjecucion;
     public int tiempoLlegada;
+    public float t_esp_max;
+    public float[] executes;
+    public int index;
     public float execute;
-
+    public int up;
+    // [22, 24, 25]
+    //if(arreglo.length>2) {
+        // this.execute = arreglo[-2];
+    //}
     public Proceso(int idProceso, String nombreProceso, int tamanioProceso, int tiempoEjecucion, int tiempoLlegada) {
         this.idProceso = idProceso;
         this.nombreProceso = nombreProceso;
         this.tamanioProceso = tamanioProceso;
         this.tiempoEjecucion = tiempoEjecucion;
         this.tiempoLlegada = tiempoLlegada;
+        this.t_esp_max = 0;
+        this.index = 0;
         this.execute = 0;
-    }
-
-    public float getExecute(float quantum) {
-        this.execute = quantum;
-        if(this.execute != (int) this.execute) {
-            this.execute = (int) this.execute;
-        }
-        else {
-            this.execute--;     
-        }
-
-        return this.execute;
+        this.executes = new float[20];
+        this.up = 0;
     }
 
     public int getIdProceso() {
@@ -71,6 +70,39 @@ class Proceso {
 
     public void reducirTiempoEjecucion() {
         tiempoEjecucion--;
+    }
+
+    public float getExecute() {
+        if(this.index > 0) {
+            return this.executes[this.index-1];
+        }
+
+
+        return this.execute;
+    }
+
+    public void setExecute(float qt) {
+        this.execute += qt;
+
+        this.executes[this.index] = this.execute;
+        this.index += 1;
+    }
+
+    public void setEspMax(float t_espera) {
+        this.t_esp_max = t_espera;
+    }
+
+    public float getEspMax() {
+        return this.t_esp_max;
+
+    }
+
+    public void setUp(int up) {
+        this.up = up;
+    }
+
+    public int getUp() {
+        return this.up;
     }
 
     @Override

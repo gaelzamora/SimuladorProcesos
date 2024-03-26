@@ -3,7 +3,7 @@ package project;
 // Eliminar elemento al terminar tiempo de ejecucion 
 
 class ColaProcesos {
-    private Proceso[] procesos;
+    public Proceso[] procesos;
     private int frente;
     private int finalCola;
     private int capacidad;

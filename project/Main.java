@@ -1,11 +1,10 @@
 package project;
 import java.util.Scanner;
+import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        int t_max = 0;
-        float ejecuto = 0;
         float esp_max = 0;
         
         System.out.print("Ingrese el tiempo de quantum: ");
@@ -14,14 +13,14 @@ public class Main {
         System.out.print("Ingrese la cantidad de procesos a crear: ");
         int n = scanner.nextInt();
 
-        Value t_ejecuto = new Value(n);
-        Value t_espera_max = new Value(n);
-        Value t_llegada = new Value(n);
-        Formula formula = new Formula(n);
+        Formula t_esp = new Formula(n);
+        Formula t_ejecucion = new Formula(n);
+        Formula t_respuesta = new Formula(n);
         Proceso[] procesos = new Proceso[n];
+        HashMap<String, Integer> hashMap = new HashMap<>();
 
         for (int i = 0; i < n; i++) {
-            System.out.println("\nIngrese los datos del proceso " + (i + 1) + ":");
+            System.out.println("\nIngrese los datos del proceso " + (i) + ":");
             scanner.nextLine(); // Limpiar el buffer del scanner
             System.out.print("Nombre del proceso: ");
             String nombreProceso = scanner.nextLine();
@@ -32,28 +31,34 @@ public class Main {
             System.out.print("Tiempo de llegada: ");
             int tiempoLlegada = scanner.nextInt();
 
-            procesos[i] = new Proceso(i + 1, nombreProceso, tamanioProceso, tiempoEjecucion-1, tiempoLlegada);
-            t_max += procesos[i].getTiempoEjecucion();
-            
-            // 12 / 4 = 3
-            float q_proceso = procesos[i].getTiempoEjecucion() / q;
-            // 2 * 4
-            ejecuto = procesos[i].getExecute(q_proceso) * q;
-            t_ejecuto.addValue(ejecuto);
-            t_llegada.addValue(procesos[i].getTiempoLlegada());
+            procesos[i] = new Proceso(i, nombreProceso, tamanioProceso, tiempoEjecucion, tiempoLlegada);
+
         }
 
         scanner.close();
 
         ColaProcesos colaProcesos = new ColaProcesos(n);
         ColaProcesos ram = new ColaProcesos(n); // Nueva cola ram
-        int capacidad = 5; // Capacidad de la cola ram
+        int capacidad = 100; // Capacidad de la cola ram
         int ejecucion_flag = 0; // Variable para controlar el proceso en ejecucion
         int qt=0;
+        int t_max = 100;
         int tiempoActual = 0;
+        int encolaciones = 0; //variable que cuenta las veces que se ha encolado a RAM
+        //int tiempo_max = 100; //variable para establecer el tiempo maximo
 
-        while (tiempoActual<t_max+1) {
+
+        Proceso procesoAux = new Proceso(0, "0", 0, 0, 0); //proceso auxiliar para encolar cuando acaba el quantum
+        boolean quantum_flag=false; //bandera para indicar cuando encolar por quantum
+
+        while (tiempoActual<t_max) {
+            
             System.out.println("Tiempo actual: " + tiempoActual);
+            
+            /*if (ram.isEmpty()&&colaProcesos.isEmpty()&&(encolaciones==n)){
+                break;
+            }*/
+            
             boolean is_time = false;
             boolean flag2 = false;
 
@@ -67,92 +72,120 @@ public class Main {
                     procesos[i].setTiempoEjecucion(procesos[i].getTiempoEjecucion()-1);
                 }
             }
-            // Imprimir cola de procesos solo si se inserta un nuevo proceso
             
+            // Imprimir cola de procesos solo si se inserta un nuevo proceso
             if (is_time) {
                 System.out.println("    Cola de procesos:");
                 colaProcesos.printQueue();
             }
            
-           // Procesamiento de la cola RAM (Ccolocar elementos de cola procesos a ram solo si existe la capacidad)
-            for(int i = 0; i<colaProcesos.size();i++){
-                Proceso proceso = colaProcesos.peek();
-                if (proceso.getTamanioProceso() <= capacidad) {
-                    System.out.println("    Hay espacio para el proceso:");
-                    // 2
-                    capacidad=capacidad-proceso.getTamanioProceso();
-                    
-                    colaProcesos.dequeue();
-                    ram.enqueue(proceso);
-                    flag2 = true;
-                } else {
-                    System.out.println("    NO hay espacio para el proceso:");
-                    break;
+           // Procesamiento de la cola RAM (Colocar elementos de cola procesos a ram solo si existe la capacidad)
+            if (colaProcesos.size() != 0) {
+                int size = colaProcesos.size(); // Guardamos el tamanio inicial de la cola
+                for (int i = 0; i < size; i++) { // Iteramos sobre el tamanio inicial de la cola
+                    Proceso proceso = colaProcesos.dequeue(); // Obtenemos el siguiente proceso de la cola
+                    if (proceso.getTamanioProceso() <= capacidad) {
+                        encolaciones++;
+                        capacidad -= proceso.getTamanioProceso();
+                        ram.enqueue(proceso);
+                        
+                        flag2 = true;
+                        System.out.println("    Hay espacio para el proceso:" + encolaciones);
+                    } else {
+                        System.out.println("    NO hay espacio para el proceso:");
+                        break;
+                    }
                 }
+            }   
+            if (quantum_flag==true){
+                ram.enqueue(procesoAux);
+                quantum_flag=false;
             }
             
-            if (flag2) {
+            /*if (flag2) {
                 System.out.println("    Cola de procesos en RAM:");
                 ram.printQueue();
-            }
+            }*/
            
             
             //Procesamiento del proceso en ejecucion
             
-            //Imprimir el proceso ejecutandoce, restar tiempo y interrupir por quantum
-            if(ejecucion_flag==1){
-                qt++;
-                System.out.println("    Tiempo en cuantum del proceso: " + qt);
-                Proceso proceso = ram.peek();
-                System.out.println("    Ejecutando proceso " + proceso.getNombreProceso() + " t: " + proceso.getTiempoEjecucion());
-                proceso.setTiempoEjecucion(proceso.getTiempoEjecucion()-1);
-                //interrumpir por cuantum
-                if (qt==q){
-                    System.out.println("    Termina el quantum de: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
-                    ram.dequeue();
-                    ram.enqueue(proceso);
-                    ejecucion_flag = 0;
+            //Imprimir el proceso ejecutandoce, restar tiempo e interrupir por quantum
+           
+            Proceso proceso = ram.peek();
+            //Nuevo proceso a ejecutarse.
+            if (!ram.isEmpty() && ejecucion_flag == 0){
+                //NO HAY PROCESO EN EJECUCION
+                
+                ejecucion_flag = 1;
+                // true
+                // is_execute = true;
+
+                System.out.println("    Ejecutando proceso: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
+                qt=0; //Se inicia o reinicia el contador de quantum 
+                if(!hashMap.containsKey(proceso.getNombreProceso())) {
+                    hashMap.put(proceso.getNombreProceso(), tiempoActual);
+                    proceso.setUp(tiempoActual);
                 }
             }
-            //Finaliza la ejecucion.   
-            if(ejecucion_flag==1){
-                Proceso proceso = ram.peek();
+            if (ejecucion_flag==1){
+                //HAY PROCESO EN EJECUCION
+                
+                qt++; //Se incrementa el tiempo que lleva en quantum
+                System.out.println("    Ejecutando proceso " + proceso.getNombreProceso() + "  t: " + proceso.getTiempoEjecucion() + "  qt: " + qt);
+                proceso.setTiempoEjecucion(proceso.getTiempoEjecucion()-1);
+                
                 esp_max = 0;
-                if (proceso.getTiempoEjecucion()<=0){
+                // 25 = 12.5
+                // 2
+                if(proceso.getTiempoEjecucion()<0){
+                    
+                    //FINALIZA EJECUCION
                     esp_max = tiempoActual;
                     
-                    t_espera_max.addValue(esp_max);
-                    t_espera_max.printValues();
+                    proceso.setEspMax(esp_max);
+                    proceso.getEspMax();
                     System.out.println("// -----    Termina la ejecucion de: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
                     ram.dequeue();
                     //regresar el espacio del proceso terminado.
                     capacidad=capacidad+proceso.getTamanioProceso();
                     ejecucion_flag = 0;
+                    
+                }else if (qt==q){
+                    //INTERRUMPIR POR CUANTUM   
+                    proceso.setExecute(qt);
+                    System.out.println("    Termina el quantum de: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
+                    ram.dequeue();
+                    procesoAux=proceso;
+                    quantum_flag=true;
+                    ejecucion_flag = 0;
                 }
             }
-            //Nuevo proceso a ejecutarse.
-            if (!ram.isEmpty() && ejecucion_flag == 0){
-                Proceso proceso = ram.peek();
-
-                ejecucion_flag = 1;
-                System.out.println("   Ejecutando proceso: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
-                //Se inicia o reinicia el contador de quantum
-                qt=0;
-            }
             tiempoActual++;
-            
-            
         }
-        float tiempo_esp = 0;
+
+        for(Proceso proceso : procesos) {
+            System.out.println(proceso.getNombreProceso());
+        }
+    
         
-        if(n>=0) {
+        if(n>0) {
             for(int i = 0; i < n; i++) {
-                System.out.println("t_espera_max es: "+t_espera_max.getValue(i)+" Tiempo de llegada: "+t_llegada.getValue(i)+" Tiempo que se ejecuto: "+t_ejecuto.getValue(i));
-                tiempo_esp = (t_espera_max.getValue(i)) - (t_llegada.getValue(i)) - (t_ejecuto.getValue(i));
-                formula.addValue((int) tiempo_esp);
-                tiempo_esp = 0;
+                float tiempo_esp = (procesos[i].getEspMax()) - (procesos[i].getTiempoLlegada()) - (procesos[i].getExecute());
+                System.out.println(" --------- Proceso: " + procesos[i].getNombreProceso() +" Esp Max: " + procesos[i].getEspMax() + " - " + " Tiempo de llegada: " 
+                + procesos[i].getTiempoLlegada() + " - " + " Se ejecuto: " + procesos[i].getExecute());
+                t_esp.addValue((int) tiempo_esp);
+
+                System.out.println("/---------------------------/");
+
+                float tiempo_res = (procesos[i].getUp()) - (procesos[i].getTiempoLlegada());
+                System.out.println("---------- subio en tiempo: "+procesos[i].getUp() + " Tiempo Llegada: "
+                +procesos[i].getTiempoLlegada());
+                t_respuesta.addValue((int) tiempo_res);
+                
             }
-            System.out.println("El promedio de espera es: "+formula.totalFormula());
+            System.out.println("// ---- El promedio de espera es: "+t_esp.totalFormula());
+            System.out.println("// ---- El promedio de respuesta es: "+t_respuesta.totalFormula());
         }
     }
 }

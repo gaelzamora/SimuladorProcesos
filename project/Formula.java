@@ -19,7 +19,6 @@ public class Formula {
 
     public float totalFormula() {
         for(int value : this.values) {
-            System.out.println(value);
             totalValues += value;
         }
 
