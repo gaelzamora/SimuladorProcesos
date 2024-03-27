@@ -5,7 +5,6 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        float esp_max = 0;
         
         System.out.print("Ingrese el tiempo de quantum: ");
         int q = scanner.nextInt();
@@ -18,6 +17,7 @@ public class Main {
         Formula t_respuesta = new Formula(n);
         Proceso[] procesos = new Proceso[n];
         HashMap<String, Integer> hashMap = new HashMap<>();
+        HashMap<String, Integer> mapProcess = new HashMap<>();
 
         for (int i = 0; i < n; i++) {
             System.out.println("\nIngrese los datos del proceso " + (i) + ":");
@@ -33,6 +33,7 @@ public class Main {
 
             procesos[i] = new Proceso(i, nombreProceso, tamanioProceso, tiempoEjecucion, tiempoLlegada);
 
+            mapProcess.put(procesos[i].getNombreProceso(), procesos[i].getIdProceso());
         }
 
         scanner.close();
@@ -42,7 +43,6 @@ public class Main {
         int capacidad = 100; // Capacidad de la cola ram
         int ejecucion_flag = 0; // Variable para controlar el proceso en ejecucion
         int qt=0;
-        int t_max = 100;
         int tiempoActual = 0;
         int encolaciones = 0; //variable que cuenta las veces que se ha encolado a RAM
         //int tiempo_max = 100; //variable para establecer el tiempo maximo
@@ -51,7 +51,7 @@ public class Main {
         Proceso procesoAux = new Proceso(0, "0", 0, 0, 0); //proceso auxiliar para encolar cuando acaba el quantum
         boolean quantum_flag=false; //bandera para indicar cuando encolar por quantum
 
-        while (tiempoActual<t_max) {
+        while (!mapProcess.isEmpty()) {
             
             System.out.println("Tiempo actual: " + tiempoActual);
             
@@ -134,23 +134,19 @@ public class Main {
                 qt++; //Se incrementa el tiempo que lleva en quantum
                 System.out.println("    Ejecutando proceso " + proceso.getNombreProceso() + "  t: " + proceso.getTiempoEjecucion() + "  qt: " + qt);
                 proceso.setTiempoEjecucion(proceso.getTiempoEjecucion()-1);
-                
-                esp_max = 0;
-                // 25 = 12.5
-                // 2
+
                 if(proceso.getTiempoEjecucion()<0){
                     
+                    proceso.setExeMax(tiempoActual);
                     //FINALIZA EJECUCION
-                    esp_max = tiempoActual;
-                    
-                    proceso.setEspMax(esp_max);
-                    proceso.getEspMax();
+                    proceso.setEspMax(qt);
                     System.out.println("// -----    Termina la ejecucion de: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
+                    
                     ram.dequeue();
                     //regresar el espacio del proceso terminado.
                     capacidad=capacidad+proceso.getTamanioProceso();
                     ejecucion_flag = 0;
-                    
+                    mapProcess.remove(proceso.getNombreProceso());
                 }else if (qt==q){
                     //INTERRUMPIR POR CUANTUM   
                     proceso.setExecute(qt);
@@ -182,10 +178,18 @@ public class Main {
                 System.out.println("---------- subio en tiempo: "+procesos[i].getUp() + " Tiempo Llegada: "
                 +procesos[i].getTiempoLlegada());
                 t_respuesta.addValue((int) tiempo_res);
-                
+
+                System.out.println("---------------------------------------------");
+
+                float tiempo_ejec = (procesos[i].getExeMax()) - (procesos[i].getTiempoLlegada());
+                System.out.println("---------- Se ejecuto hasta tiempo: "+procesos[i].getExeMax() + 
+                " Tiempo Llegada: " + procesos[i].getTiempoLlegada());
+                t_ejecucion.addValue((int) tiempo_ejec);
+
             }
             System.out.println("// ---- El promedio de espera es: "+t_esp.totalFormula());
             System.out.println("// ---- El promedio de respuesta es: "+t_respuesta.totalFormula());
+            System.out.println("// ---- El promedio de ejecucion es: "+t_ejecucion.totalFormula());
         }
     }
 }

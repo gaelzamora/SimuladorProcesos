@@ -6,6 +6,7 @@ class Proceso {
     public int tamanioProceso;
     public int tiempoEjecucion;
     public int tiempoLlegada;
+    public float t_exe_max;
     public float t_esp_max;
     public float[] executes;
     public int index;
@@ -21,6 +22,7 @@ class Proceso {
         this.tamanioProceso = tamanioProceso;
         this.tiempoEjecucion = tiempoEjecucion;
         this.tiempoLlegada = tiempoLlegada;
+        this.t_exe_max = 0;
         this.t_esp_max = 0;
         this.index = 0;
         this.execute = 0;
@@ -88,13 +90,22 @@ class Proceso {
         this.index += 1;
     }
 
-    public void setEspMax(float t_espera) {
-        this.t_esp_max = t_espera;
+    public void setExeMax(float t_exe) {
+        this.t_exe_max = t_exe;
     }
 
-    public float getEspMax() {
-        return this.t_esp_max;
+    public float getExeMax() {
+        return this.t_exe_max;
 
+    }
+    // 2
+    public void setEspMax(int qt) {
+        if(qt < this.t_exe_max) {
+            this.t_esp_max = this.t_exe_max - qt;
+        }
+    }
+    public float getEspMax() {
+        return this.t_esp_max+1;
     }
 
     public void setUp(int up) {
