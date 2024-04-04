@@ -79,7 +79,6 @@ class Proceso {
             return this.executes[this.index-1];
         }
 
-
         return this.execute;
     }
 
@@ -101,7 +100,7 @@ class Proceso {
     // 2
     public void setEspMax(int qt) {
         if(qt < this.t_exe_max) {
-            this.t_esp_max = this.t_exe_max - qt;
+            this.t_esp_max = (this.t_exe_max-1) - qt;
         }
     }
     public float getEspMax() {

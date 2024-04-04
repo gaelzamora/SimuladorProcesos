@@ -106,7 +106,6 @@ public class Main {
                 System.out.println("    Cola de procesos en RAM:");
                 ram.printQueue();
             }*/
-           
             
             //Procesamiento del proceso en ejecucion
             
@@ -137,7 +136,7 @@ public class Main {
 
                 if(proceso.getTiempoEjecucion()<0){
                     
-                    proceso.setExeMax(tiempoActual);
+                    proceso.setExeMax(tiempoActual+1);
                     //FINALIZA EJECUCION
                     proceso.setEspMax(qt);
                     System.out.println("// -----    Termina la ejecucion de: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
