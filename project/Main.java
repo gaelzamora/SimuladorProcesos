@@ -11,16 +11,26 @@ public class Main {
         
         System.out.print("Ingrese la cantidad de procesos a crear: ");
         int n = scanner.nextInt();
-
+        
+        //Se crea cada Formula a resolver
         Formula t_esp = new Formula(n);
         Formula t_ejecucion = new Formula(n);
         Formula t_respuesta = new Formula(n);
+
+        //Se crea un arreglo que almacena entidades de Proceso 
+        //con una longitud de n que es la que dio el usuario 
         Proceso[] procesos = new Proceso[n];
+        
+        //Se crea mapa hash para saber cuando un proceso suba por primera vez a la CPU
         HashMap<String, Integer> hashMap = new HashMap<>();
+        
+        //Se crea mapa hash para guardar procesos activos en la cola
         HashMap<String, Integer> mapProcess = new HashMap<>();
 
+        // Se hace la captura de los procesos en el arreglo y se agregan los procesos en el mapa hash 
+        //de mapProcess
         for (int i = 0; i < n; i++) {
-            System.out.println("\nIngrese los datos del proceso " + (i) + ":");
+            System.out.println("\nIngrese los datos del proceso " + (i+1) + ":");
             scanner.nextLine(); // Limpiar el buffer del scanner
             System.out.print("Nombre del proceso: ");
             String nombreProceso = scanner.nextLine();
