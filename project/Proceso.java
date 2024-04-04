@@ -12,10 +12,7 @@ class Proceso {
     public int index;
     public float execute;
     public int up;
-    // [22, 24, 25]
-    //if(arreglo.length>2) {
-        // this.execute = arreglo[-2];
-    //}
+
     public Proceso(int idProceso, String nombreProceso, int tamanioProceso, int tiempoEjecucion, int tiempoLlegada) {
         this.idProceso = idProceso;
         this.nombreProceso = nombreProceso;
@@ -97,7 +94,6 @@ class Proceso {
         return this.t_exe_max;
 
     }
-    // 2
     public void setEspMax(int qt) {
         if(qt < this.t_exe_max) {
             this.t_esp_max = (this.t_exe_max-1) - qt;

@@ -28,7 +28,7 @@ public class Main {
         HashMap<String, Integer> mapProcess = new HashMap<>();
 
         // Se hace la captura de los procesos en el arreglo y se agregan los procesos en el mapa hash 
-        //de mapProcess
+        // de mapProcess
         for (int i = 0; i < n; i++) {
             System.out.println("\nIngrese los datos del proceso " + (i+1) + ":");
             scanner.nextLine(); // Limpiar el buffer del scanner
@@ -47,13 +47,15 @@ public class Main {
         }
 
         scanner.close();
-
+        
+        // Se crean las dos colas una para almacenar los procesos y otro para espacios en la ram 
         ColaProcesos colaProcesos = new ColaProcesos(n);
-        ColaProcesos ram = new ColaProcesos(n); // Nueva cola ram
+        ColaProcesos ram = new ColaProcesos(n);
+
         int capacidad = 100; // Capacidad de la cola ram
         int ejecucion_flag = 0; // Variable para controlar el proceso en ejecucion
-        int qt=0;
-        int tiempoActual = 0;
+        int qt=0; // Se inicializa el quantum a contar
+        int tiempoActual = 0; 
         int encolaciones = 0; //variable que cuenta las veces que se ha encolado a RAM
         //int tiempo_max = 100; //variable para establecer el tiempo maximo
 
@@ -61,26 +63,27 @@ public class Main {
         Proceso procesoAux = new Proceso(0, "0", 0, 0, 0); //proceso auxiliar para encolar cuando acaba el quantum
         boolean quantum_flag=false; //bandera para indicar cuando encolar por quantum
 
+        // Se hace la condicion para saber si hay procesos en la cola con el mapa hash
         while (!mapProcess.isEmpty()) {
             
             System.out.println("Tiempo actual: " + tiempoActual);
             
-            /*if (ram.isEmpty()&&colaProcesos.isEmpty()&&(encolaciones==n)){
-                break;
-            }*/
-            
+            // Se crean banderas para ocuparlas en condiciones
             boolean is_time = false;
             boolean flag2 = false;
 
             //Poblar la cola de procesos en funcion del tiempo de llegada
             for(int i = 0; i<n; i++){
-
+                // Condicion para saber cuando el tiempo de llegada del proceso
+                // sea igual al tiempo actual
                 if (procesos[i].getTiempoLlegada()==tiempoActual){
-                    
+                    // Se hace la insercion del proceo en la cola
                     colaProcesos.enqueue(procesos[i]);
                     is_time = true;
+                    
+                    // Se activa el tiempo de ejecucion del proceso
                     procesos[i].setTiempoEjecucion(procesos[i].getTiempoEjecucion()-1);
-                }
+.                }
             }
             
             // Imprimir cola de procesos solo si se inserta un nuevo proceso
@@ -112,15 +115,7 @@ public class Main {
                 quantum_flag=false;
             }
             
-            /*if (flag2) {
-                System.out.println("    Cola de procesos en RAM:");
-                ram.printQueue();
-            }*/
-            
-            //Procesamiento del proceso en ejecucion
-            
-            //Imprimir el proceso ejecutandoce, restar tiempo e interrupir por quantum
-           
+            // agarra el proceso que le toca ejecutarse de la cola
             Proceso proceso = ram.peek();
             //Nuevo proceso a ejecutarse.
             if (!ram.isEmpty() && ejecucion_flag == 0){
@@ -132,6 +127,8 @@ public class Main {
 
                 System.out.println("    Ejecutando proceso: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
                 qt=0; //Se inicia o reinicia el contador de quantum 
+
+                // Ayuda a identintificar cuando el proceso suba por primera vez a la CPU
                 if(!hashMap.containsKey(proceso.getNombreProceso())) {
                     hashMap.put(proceso.getNombreProceso(), tiempoActual);
                     proceso.setUp(tiempoActual);
@@ -146,15 +143,20 @@ public class Main {
 
                 if(proceso.getTiempoEjecucion()<0){
                     
+                    // Se setea la Ejecucion Maxima del proceso al tiempo actual + 1
+                    // y la Espera Maxima para ejecutarse
                     proceso.setExeMax(tiempoActual+1);
-                    //FINALIZA EJECUCION
                     proceso.setEspMax(qt);
+                    
+                    //FINALIZA EJECUCION
                     System.out.println("// -----    Termina la ejecucion de: " + proceso.getNombreProceso() + " (ID: " + proceso.getIdProceso() + ")");
                     
+                    // Se elimina el prceso de la cola RAM.
                     ram.dequeue();
                     //regresar el espacio del proceso terminado.
                     capacidad=capacidad+proceso.getTamanioProceso();
                     ejecucion_flag = 0;
+                    // Se elimina el proceso del mapProcess
                     mapProcess.remove(proceso.getNombreProceso());
                 }else if (qt==q){
                     //INTERRUMPIR POR CUANTUM   
@@ -168,13 +170,10 @@ public class Main {
             }
             tiempoActual++;
         }
-
-        for(Proceso proceso : procesos) {
-            System.out.println(proceso.getNombreProceso());
-        }
     
-        
+        // Condicion para saber si hay procesos a procesar
         if(n>0) {
+            // Imprime los datos de cada proceso y las formulas de todos los procesos
             for(int i = 0; i < n; i++) {
                 float tiempo_esp = (procesos[i].getEspMax()) - (procesos[i].getTiempoLlegada()) - (procesos[i].getExecute());
                 System.out.println(" --------- Proceso: " + procesos[i].getNombreProceso() +" Esp Max: " + procesos[i].getEspMax() + " - " + " Tiempo de llegada: " 
