@@ -52,7 +52,7 @@ public class Main {
         ColaProcesos colaProcesos = new ColaProcesos(n);
         ColaProcesos ram = new ColaProcesos(n);
 
-        int capacidad = 100; // Capacidad de la cola ram
+        int capacidad = 1024; // Capacidad de la cola ram
         int ejecucion_flag = 0; // Variable para controlar el proceso en ejecucion
         int qt=0; // Se inicializa el quantum a contar
         int tiempoActual = 0; 
@@ -65,8 +65,10 @@ public class Main {
 
         // Se hace la condicion para saber si hay procesos en la cola con el mapa hash
         while (!mapProcess.isEmpty()) {
-            
-            System.out.println("Tiempo actual: " + tiempoActual);
+            /*if(ram.isEmpty()&&colaProcesos.isEmpty()&&(encolaciones==n)) {
+                break;
+            }*/
+            System.out.println("Tiempo actual: " + tiempoActual + " Capacidad:"+capacidad);
             
             // Se crean banderas para ocuparlas en condiciones
             boolean is_time = false;
@@ -83,7 +85,7 @@ public class Main {
                     
                     // Se activa el tiempo de ejecucion del proceso
                     procesos[i].setTiempoEjecucion(procesos[i].getTiempoEjecucion()-1);
-.                }
+                }
             }
             
             // Imprimir cola de procesos solo si se inserta un nuevo proceso
@@ -103,17 +105,19 @@ public class Main {
                         ram.enqueue(proceso);
                         
                         flag2 = true;
-                        System.out.println("    Hay espacio para el proceso:" + encolaciones);
+                        System.out.println("    Hay espacio para el proceso:" + proceso.getNombreProceso());
                     } else {
+                        colaProcesos.enqueue(proceso);
                         System.out.println("    NO hay espacio para el proceso:");
                         break;
                     }
                 }
-            }   
+            }
             if (quantum_flag==true){
                 ram.enqueue(procesoAux);
                 quantum_flag=false;
             }
+            ram.printQueue();
             
             // agarra el proceso que le toca ejecutarse de la cola
             Proceso proceso = ram.peek();
