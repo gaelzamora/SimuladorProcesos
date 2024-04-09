@@ -52,7 +52,7 @@ public class Main {
         ColaProcesos colaProcesos = new ColaProcesos(n);
         ColaProcesos ram = new ColaProcesos(n);
 
-        int capacidad = 1024; // Capacidad de la cola ram
+        int capacidad = 100; // Capacidad de la cola ram
         int ejecucion_flag = 0; // Variable para controlar el proceso en ejecucion
         int qt=0; // Se inicializa el quantum a contar
         int tiempoActual = 0; 
@@ -149,7 +149,11 @@ public class Main {
                     
                     // Se setea la Ejecucion Maxima del proceso al tiempo actual + 1
                     // y la Espera Maxima para ejecutarse
+                    System.out.println(proceso.getNombreProceso() + ":" + tiempoActual);
+                    System.out.println("Le queda quantum: " + qt);
+                    // 13
                     proceso.setExeMax(tiempoActual+1);
+                    // 2
                     proceso.setEspMax(qt);
                     
                     //FINALIZA EJECUCION
